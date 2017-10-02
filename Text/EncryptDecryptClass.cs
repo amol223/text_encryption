@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -17,7 +18,7 @@ namespace EncryptDecrypt
 
         public string EncryptInput(string input)
         {
-            string key = (ConfigurationManager.AppSettings["key"]); //read encrypt key from config file
+            string key = (ConfigurationManager.AppSettings["secretkey"]); //read encrypt key from config file
             UInt32 sumOfKeyChar = (UInt32)key.Select(x => (int)x).Sum(); //sum of ascii value of all chars in key
             //Console.WriteLine(sumOfKeyChar);
             int lengthOfKey = key.Length; //length of key
@@ -31,7 +32,7 @@ namespace EncryptDecrypt
 
         public string DecryptInput(string input)
         {
-            string key = (ConfigurationManager.AppSettings["key"]); //read encrypt key from config file
+            string key = (ConfigurationManager.AppSettings["secretkey"]); //read encrypt key from config file
             UInt32 sumOfKeyChar = (UInt32)key.Select(x => (int)x).Sum(); //sum of ascii value of all chars in key
             //Console.WriteLine(sumOfKeyChar);
             int lengthOfKey = key.Length; //length of key
@@ -124,7 +125,7 @@ namespace EncryptDecrypt
             if(specialCharPositions.Count !=  0)
                 specialCharPositions.Add(specialCharPositions.Count.ToString()); //number of nonalphabetic chars
             else
-                specialCharPositions.Add("o"); //no nonalphabetic char case
+                specialCharPositions.Add("."); //no nonalphabetic char case
             string specialCharString = String.Join(String.Empty, specialCharPositions.ToArray()); 
             //Console.WriteLine(specialCharString);
             inputCharArray.Append(".");
@@ -209,6 +210,53 @@ namespace EncryptDecrypt
             string decryptedString = inputCharArray.ToString(); //decrypted string
             //Console.WriteLine(decryptedString);                        
             return decryptedString;
-        }        
+        }
+
+        public string stringtenograph(string input) 
+        {
+            string[] splitString = input.Split('.');
+            StringBuilder charArray = new StringBuilder(splitString[0]);
+            string remainingString = input.Substring(charArray.Length, input.Length - charArray.Length);
+            string output = string.Empty;
+
+            for (int i = 0; i < charArray.Length; i++)
+            {                
+                if (charArray[i] >= 65 && charArray[i] <= 90) 
+                    output = output + ConfigurationManager.AppSettings[charArray[i].ToString() + " "];
+                else if (charArray[i] >= 97 && charArray[i] <= 122)
+                    output = output + ConfigurationManager.AppSettings[charArray[i].ToString()];                    
+                else if(charArray[i] == 32)
+                    output = output + "SPACE";
+                else
+                    output = output + charArray[i];
+
+                if (i != charArray.Length - 1)
+                    output = output + " ";
+            }
+
+            output = output + remainingString;
+            return output;
+        }
+
+        public string decodestringtenograph(string input)
+        {
+            string[] splitString = input.Split('.');
+            string remainingString = input.Substring(splitString[0].Length, input.Length - splitString[0].Length);
+            string[] splitWords = splitString[0].Split(' ');
+
+            string toDecrypt = string.Empty;
+            for (int i = 0; i < splitWords.Length; i++)
+            {
+                if (ConfigurationManager.AppSettings[splitWords[i].ToString()] != null)
+                    toDecrypt = toDecrypt + ConfigurationManager.AppSettings[splitWords[i].ToString()];
+                else if (splitWords[i].ToString() == "SPACE")
+                    toDecrypt = toDecrypt + " ";
+                else
+                    toDecrypt = toDecrypt + splitWords[i];
+            }
+
+            toDecrypt = toDecrypt + remainingString;
+            return toDecrypt;
+        }
     }
 }
