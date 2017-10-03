@@ -234,7 +234,20 @@ namespace EncryptDecrypt
                     output = output + " ";
             }
 
-            output = output + remainingString;
+            Configuration configuration = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+            if (configuration.AppSettings.Settings[output] == null)
+            {
+                configuration.AppSettings.Settings.Add(output, remainingString);
+            }
+            else
+            {
+                configuration.AppSettings.Settings.Remove(output);
+                configuration.AppSettings.Settings.Add(output, remainingString);
+            }
+
+            configuration.Save();
+            ConfigurationManager.RefreshSection("appSettings");
+
             return output;
         }
 
@@ -243,6 +256,18 @@ namespace EncryptDecrypt
             string[] splitString = input.Split('.');
             string remainingString = input.Substring(splitString[0].Length, input.Length - splitString[0].Length);
             string[] splitWords = splitString[0].Split(' ');
+
+            if (ConfigurationManager.AppSettings[input] != null)
+            {
+                remainingString = ConfigurationManager.AppSettings[input.ToString()];
+                Configuration configuration = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+                configuration.AppSettings.Settings.Remove(input);
+            }
+            else
+            {
+                remainingString = "";
+            }
+            
 
             string toDecrypt = string.Empty;
             for (int i = 0; i < splitWords.Length; i++)
